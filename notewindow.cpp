@@ -1,23 +1,11 @@
 #include "notewindow.h"
 #include "loginwindow.h"
-#include "ui_notewindow.h"
-#include <QString>
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
-#include <QNetworkRequest>
-#include <QJsonArray>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonValue>
-#include <QPushButton>
-#include <QDebug>
-#include <iostream>
+#include "viewnote.h"
 
 NoteWindow::NoteWindow(QString username, QString password) {
     this->username = username;
     this->password = password;
     QWidget *window = new QWidget();
-    QVBoxLayout *layout = new QVBoxLayout();
     QLabel *userLabel = new QLabel("Welcome " + username + "!");
     userLabel->setStyleSheet("QLabel {font-size: 20pt;}");
     QLabel *menuLabel = new QLabel(tr("Notes"));
@@ -25,14 +13,13 @@ NoteWindow::NoteWindow(QString username, QString password) {
     QPushButton *createNoteButton = new QPushButton("Create Note");
     layout->addWidget(userLabel);
     layout->addWidget(menuLabel);
-    layout->addWidget(createNoteButton);
 
     QJsonObject jsonObj;
     jsonObj.insert("username", QJsonValue::fromVariant(username));
     jsonObj.insert("password", QJsonValue::fromVariant(password));
     QJsonDocument doc(jsonObj);
 
-    QNetworkRequest request(QUrl("http://127.0.0.1:8000/api/get-notes"));
+    QNetworkRequest request(QUrl("https://jasemwilson.com/api/get-notes"));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     QNetworkAccessManager man;
     QNetworkReply *reply = man.post(request, doc.toJson());
@@ -41,16 +28,27 @@ NoteWindow::NoteWindow(QString username, QString password) {
         qApp->processEvents();
     }
     QByteArray resBytes = reply->readAll();
-    QJsonDocument itemDoc = QJsonDocument::fromJson(resBytes);
-    for(int i = 0; i < itemDoc.size(); i++){
-        qDebug() << itemDoc[i];
+    *data = QJsonDocument::fromJson(resBytes).array();
+    connect(list, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(openNote(QListWidgetItem*)));
+    for(int i = 0; i < data->size(); i++){
+        new QListWidgetItem(data->at(i).toObject().value("title").toString(), list);
     }
-    qDebug() << itemDoc;
+    layout->addWidget(list);
+    layout->addWidget(createNoteButton);
     window->setLayout(layout);
     setCentralWidget(window);
+    setWindowTitle(username + QString("'s Notes"));
 
 }
 
 NoteWindow::~NoteWindow(){
 }
 
+void NoteWindow::openNote(QListWidgetItem* note){
+    for(int i = 0; i < list->count(); i++){
+        if(list->item(i) == note){
+            ViewNote *note = new ViewNote(data->at(i).toObject());
+            note->show();
+        }
+    }
+}

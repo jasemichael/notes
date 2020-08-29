@@ -1,14 +1,17 @@
 #ifndef LOGINWINDOW_H
 #define LOGINWINDOW_H
-#include <QMainWindow>
-#include <QLineEdit>
-#include <QVBoxLayout>
 
-class LoginWindow : public QMainWindow {
+#include <QtWidgets>
+#include <QtNetwork>
+#include <iostream>
+
+class LoginWindow : public QWidget {
     Q_OBJECT
+
 public:
     LoginWindow();
     ~LoginWindow();
+    void keyPressEvent(QKeyEvent *e);
 
 private slots:
     void login();

@@ -1,20 +1,7 @@
 #include "loginwindow.h"
 #include "notewindow.h"
 
-#include <QLabel>
-#include <QPushButton>
-#include <QWidget>
-#include <iostream>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QNetworkAccessManager>
-#include <QNetworkRequest>
-#include <QNetworkReply>
-#include <QNetworkCookieJar>
-#include <QApplication>
-
 LoginWindow::LoginWindow(){
-    QWidget *window = new QWidget();
     QLabel *usernameLabel = new QLabel(tr("Username"));
     QLabel *passwordLabel = new QLabel(tr("Password"));
     passwordLineEdit->setEchoMode(QLineEdit::Password);
@@ -25,8 +12,11 @@ LoginWindow::LoginWindow(){
     layout->addWidget(passwordLabel);
     layout->addWidget(passwordLineEdit);
     layout->addWidget(submitButton);
-    window->setLayout(layout);
-    setCentralWidget(window);
+    layout->setSpacing(0);
+    layout->setMargin(0);
+    layout->setAlignment(this, Qt::AlignCenter);
+    setLayout(layout);
+    setWindowState(Qt::WindowMaximized);
     setWindowTitle(tr("Login"));
 }
 
@@ -59,7 +49,7 @@ void LoginWindow::login(){
         layout->insertWidget(0, success);
         NoteWindow *note = new NoteWindow(username, password);
         note->show();
-        this->close();
+        close();
     } else {
         QLabel *error = new QLabel(tr("Username or password is incorrect!"));
         error->setStyleSheet("QLabel {background-color: red; color: white;}");
@@ -67,4 +57,10 @@ void LoginWindow::login(){
     }
 
 
+}
+
+void LoginWindow::keyPressEvent(QKeyEvent *e){
+    if (e->key() == Qt::Key_Return){
+        login();
+    }
 }
